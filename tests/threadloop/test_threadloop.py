@@ -6,6 +6,7 @@ import pytest
 
 from concurrent.futures import Future, as_completed
 from threadloop import ThreadLoop
+from threadloop.exceptions import ThreadNotStartedError
 from tornado import gen, ioloop
 
 
@@ -71,6 +72,17 @@ def test_use_existing_ioloop():
     with threadloop:
         future = threadloop.submit(coroutine)
         assert future.result() == "Hello World"
+
+
+def test_start_must_be_called_before_submit():
+    threadloop = ThreadLoop()
+
+    @gen.coroutine
+    def coroutine():
+        raise gen.Return("Hello World")
+
+    with pytest.raises(ThreadNotStartedError):
+        threadloop.submit(coroutine)
 
 
 def test_submits_coroutines_concurrently(threadloop):

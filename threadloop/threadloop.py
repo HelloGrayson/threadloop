@@ -1,10 +1,11 @@
 from __future__ import absolute_import
 
+from concurrent.futures import Future
 from threading import Thread
 
-from concurrent.futures import Future
-
 from tornado import ioloop
+
+from .exceptions import ThreadNotStartedError
 
 
 class ThreadLoop(object):
@@ -32,6 +33,10 @@ class ThreadLoop(object):
         self.thread.join()
 
     def submit(self, fn, *args, **kwargs):
+
+        if self.thread is None or not self.thread.isAlive():
+            raise ThreadNotStartedError()
+
         future = Future()
 
         def on_done(tornado_future):
