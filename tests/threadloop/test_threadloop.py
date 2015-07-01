@@ -101,7 +101,7 @@ def test_submits_coroutines_concurrently(threadloop):
     result3 = future3.result()
 
     end = time.time() - start
-    took = round(Decimal(end), 1)
+    took = float(round(Decimal(end), 1))
 
     # should only take ~100 ms to finish both
     # instead of ~300ms if they were executed serially

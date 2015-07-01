@@ -1,5 +1,13 @@
 from setuptools import setup, find_packages
 
+install_requires = ['tornado']
+
+# if python < 3, we need futures backport
+try:
+    import concurrent.futures  # noqa
+except ImportError:
+    install_requires.append('futures')
+
 setup(
     name='threadloop',
     version='0.1.0',
@@ -9,8 +17,5 @@ setup(
     license='MIT',
     url='https://github.com/breerly/threadloop',
     packages=find_packages(exclude=['tests']),
-    install_requires=[
-        'tornado',
-        'futures'
-    ]
+    install_requires=install_requires
 )
