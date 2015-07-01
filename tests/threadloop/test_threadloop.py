@@ -34,12 +34,14 @@ def test_coroutine_returns_future(threadloop):
 def test_propogates_arguments(threadloop):
 
     @gen.coroutine
-    def coroutine(message):
-        raise gen.Return("Hello %s" % message)
+    def coroutine(message, adjective="Shady"):
+        raise gen.Return("Hello %s %s" % (adjective, message))
     
     future = threadloop.submit(coroutine, "World")
+    assert future.result() == "Hello Shady World"
 
-    assert future.result() == "Hello World"
+    future = threadloop.submit(coroutine, "World", adjective="Cloudy")
+    assert future.result() == "Hello Cloudy World"
 
 
 def test_coroutine_exception_propagates(threadloop):
