@@ -36,7 +36,7 @@ def test_propogates_arguments(threadloop):
     @gen.coroutine
     def coroutine(message, adjective="Shady"):
         raise gen.Return("Hello %s %s" % (adjective, message))
-    
+
     future = threadloop.submit(coroutine, "World")
     assert future.result() == "Hello Shady World"
 
