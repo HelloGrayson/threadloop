@@ -6,7 +6,7 @@ import pytest
 
 from concurrent.futures import Future, as_completed
 from threadloop import ThreadLoop
-from tornado import gen
+from tornado import gen, ioloop
 
 
 @pytest.yield_fixture
@@ -56,6 +56,21 @@ def test_coroutine_exception_propagates(threadloop):
     with pytest.raises(TestException):
         future = threadloop.submit(coroutine)
         future.result()
+
+
+def test_use_existing_ioloop():
+    io_loop = ioloop.IOLoop.current()
+    threadloop = ThreadLoop(io_loop)
+
+    assert threadloop.io_loop is io_loop
+
+    @gen.coroutine
+    def coroutine():
+        raise gen.Return("Hello World")
+
+    with threadloop:
+        future = threadloop.submit(coroutine)
+        assert future.result() == "Hello World"
 
 
 def test_submits_coroutines_concurrently(threadloop):
