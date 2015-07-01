@@ -2,6 +2,7 @@ from __future__ import absolute_import
 
 from concurrent.futures import Future
 from threading import Thread
+import sys
 
 from tornado import ioloop
 
@@ -26,7 +27,14 @@ class ThreadLoop(object):
     def start(self):
         assert self.thread is None, 'thread already started'
         self.thread = Thread(target=self.io_loop.start)
-        self.thread.start()
+
+        # terminate thread & cleanup
+        # on system exit or keyboard interrupt
+        try:
+            self.thread.start()
+        except (KeyboardInterrupt, SystemExit):
+            self.stop()
+            sys.exit()
 
     def stop(self):
         self.io_loop.stop()
