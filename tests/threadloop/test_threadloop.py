@@ -88,7 +88,7 @@ def test_submits_coroutines_concurrently(threadloop):
     end = time.time() - start
     took = round(Decimal(end), 1)
 
-    # should only take ~100 ks to finish both
+    # should only take ~100 ms to finish both
     # instead of ~300ms if they were executed serially
     assert took == .1
 
