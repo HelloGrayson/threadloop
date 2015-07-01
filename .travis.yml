@@ -3,6 +3,13 @@ language: python
 python:
   - "2.7"
 
-install: make install
+install: 
+  - make install
+  - pip install coveralls
 
-script: make test
+script: 
+  - make test
+  - coverage run --source=threadloop setup.py test
+
+after_success:
+  - coveralls
