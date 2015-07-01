@@ -4,7 +4,7 @@ import time
 
 import pytest
 
-from concurrent.futures import Future
+from concurrent.futures import Future, as_completed
 from threadloop import ThreadLoop
 from tornado import gen
 
@@ -72,11 +72,11 @@ def test_submits_coroutines_concurrently():
         result3 = future3.result()
 
         end = time.time() - start
-        took = round(Decimal(end), 2)
+        took = round(Decimal(end), 1)
 
         # should only take ~100 ks to finish both
         # instead of ~300ms if they were executed serially
-        assert took == 0.1
+        assert took == .1
 
         assert result1 == 'coroutine1'
         assert result2 == 'coroutine2'
@@ -84,4 +84,46 @@ def test_submits_coroutines_concurrently():
 
 
 def test_as_completed():
-    pass
+
+    @gen.coroutine
+    def coroutine1():
+        yield gen.sleep(.02)
+        raise gen.Return('coroutine1')
+
+    @gen.coroutine
+    def coroutine2():
+        yield gen.sleep(.03)
+        raise gen.Return('coroutine2')
+
+    @gen.coroutine
+    def coroutine3():
+        yield gen.sleep(.01)
+        raise gen.Return('coroutine3')
+
+    @gen.coroutine
+    def coroutine4():
+        yield gen.sleep(.04)
+        raise gen.Return('coroutine4')
+
+    with ThreadLoop() as threadloop:
+        futures = []
+        futures.append(threadloop.submit(coroutine1))
+        futures.append(threadloop.submit(coroutine2))
+        futures.append(threadloop.submit(coroutine3))
+        futures.append(threadloop.submit(coroutine4))
+
+        i = 0
+        for future in as_completed(futures):
+            i = i + 1
+
+            # make sure futures finish in the expected order
+            if i == 1:
+                assert future.result() == "coroutine3"
+            elif i == 2:
+                assert future.result() == "coroutine1"
+            elif i == 3:
+                assert future.result() == "coroutine2"
+            elif i == 4:
+                assert future.result() == "coroutine4"
+
+        assert i == 4, "expected 4 completed futures"
