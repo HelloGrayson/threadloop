@@ -1,5 +1,6 @@
+flake8
 ipdb
 pytest
 pytest-cov
-flake8
+twine
 zest.releaser
