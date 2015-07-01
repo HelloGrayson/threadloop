@@ -9,6 +9,12 @@ from threadloop import ThreadLoop
 from tornado import gen
 
 
+@pytest.yield_fixture
+def threadloop():
+    with ThreadLoop() as threadloop:
+        yield threadloop
+
+
 def test_coroutine_returns_future():
 
     @gen.coroutine
@@ -24,6 +30,17 @@ def test_coroutine_returns_future():
         )
 
         assert future.result() == "Hello World"
+
+
+def test_propogates_arguments(threadloop):
+
+    @gen.coroutine
+    def coroutine(message):
+        raise gen.Return("Hello %s" % message)
+    
+    future = threadloop.submit(coroutine, "World")
+
+    assert future.result() == "Hello World"
 
 
 def test_coroutine_exception_propagates():

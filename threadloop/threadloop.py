@@ -31,7 +31,7 @@ class ThreadLoop(object):
         self.io_loop.stop()
         self.thread.join()
 
-    def submit(self, fn):
+    def submit(self, fn, *args, **kwargs):
         future = Future()
 
         def on_done(tornado_future):
@@ -40,5 +40,8 @@ class ThreadLoop(object):
             else:
                 future.set_result(tornado_future.result())
 
-        self.io_loop.add_callback(lambda: fn().add_done_callback(on_done))
+        self.io_loop.add_callback(
+            lambda: fn(*args, **kwargs).add_done_callback(on_done)
+        )
+
         return future
