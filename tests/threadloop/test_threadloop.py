@@ -15,21 +15,20 @@ def threadloop():
         yield threadloop
 
 
-def test_coroutine_returns_future():
+def test_coroutine_returns_future(threadloop):
 
     @gen.coroutine
     def coroutine():
         raise gen.Return("Hello World")
 
-    with ThreadLoop() as threadloop:
-        future = threadloop.submit(coroutine)
+    future = threadloop.submit(coroutine)
 
-        assert (
-            isinstance(future, Future),
-            "expected a concurrent.futures.Future"
-        )
+    assert (
+        isinstance(future, Future),
+        "expected a concurrent.futures.Future"
+    )
 
-        assert future.result() == "Hello World"
+    assert future.result() == "Hello World"
 
 
 def test_propogates_arguments(threadloop):
@@ -43,7 +42,7 @@ def test_propogates_arguments(threadloop):
     assert future.result() == "Hello World"
 
 
-def test_coroutine_exception_propagates():
+def test_coroutine_exception_propagates(threadloop):
 
     class TestException(Exception):
         pass
@@ -52,14 +51,12 @@ def test_coroutine_exception_propagates():
     def coroutine():
         raise TestException()
 
-    with ThreadLoop() as threadloop:
-
-        with pytest.raises(TestException):
-            future = threadloop.submit(coroutine)
-            future.result()
+    with pytest.raises(TestException):
+        future = threadloop.submit(coroutine)
+        future.result()
 
 
-def test_submits_coroutines_concurrently():
+def test_submits_coroutines_concurrently(threadloop):
 
     @gen.coroutine
     def coroutine1():
@@ -76,31 +73,29 @@ def test_submits_coroutines_concurrently():
         yield gen.sleep(.1)
         raise gen.Return('coroutine3')
 
-    with ThreadLoop() as threadloop:
+    start = time.time()
 
-        start = time.time()
+    future1 = threadloop.submit(coroutine1)
+    future2 = threadloop.submit(coroutine2)
+    future3 = threadloop.submit(coroutine3)
 
-        future1 = threadloop.submit(coroutine1)
-        future2 = threadloop.submit(coroutine2)
-        future3 = threadloop.submit(coroutine3)
+    result1 = future1.result()
+    result2 = future2.result()
+    result3 = future3.result()
 
-        result1 = future1.result()
-        result2 = future2.result()
-        result3 = future3.result()
+    end = time.time() - start
+    took = round(Decimal(end), 1)
 
-        end = time.time() - start
-        took = round(Decimal(end), 1)
+    # should only take ~100 ks to finish both
+    # instead of ~300ms if they were executed serially
+    assert took == .1
 
-        # should only take ~100 ks to finish both
-        # instead of ~300ms if they were executed serially
-        assert took == .1
-
-        assert result1 == 'coroutine1'
-        assert result2 == 'coroutine2'
-        assert result3 == 'coroutine3'
+    assert result1 == 'coroutine1'
+    assert result2 == 'coroutine2'
+    assert result3 == 'coroutine3'
 
 
-def test_as_completed():
+def test_as_completed(threadloop):
 
     @gen.coroutine
     def coroutine1():
@@ -122,25 +117,24 @@ def test_as_completed():
         yield gen.sleep(.04)
         raise gen.Return('coroutine4')
 
-    with ThreadLoop() as threadloop:
-        futures = []
-        futures.append(threadloop.submit(coroutine1))
-        futures.append(threadloop.submit(coroutine2))
-        futures.append(threadloop.submit(coroutine3))
-        futures.append(threadloop.submit(coroutine4))
+    futures = []
+    futures.append(threadloop.submit(coroutine1))
+    futures.append(threadloop.submit(coroutine2))
+    futures.append(threadloop.submit(coroutine3))
+    futures.append(threadloop.submit(coroutine4))
 
-        i = 0
-        for future in as_completed(futures):
-            i = i + 1
+    i = 0
+    for future in as_completed(futures):
+        i = i + 1
 
-            # make sure futures finish in the expected order
-            if i == 1:
-                assert future.result() == "coroutine3"
-            elif i == 2:
-                assert future.result() == "coroutine1"
-            elif i == 3:
-                assert future.result() == "coroutine2"
-            elif i == 4:
-                assert future.result() == "coroutine4"
+        # make sure futures finish in the expected order
+        if i == 1:
+            assert future.result() == "coroutine3"
+        elif i == 2:
+            assert future.result() == "coroutine1"
+        elif i == 3:
+            assert future.result() == "coroutine2"
+        elif i == 4:
+            assert future.result() == "coroutine4"
 
-        assert i == 4, "expected 4 completed futures"
+    assert i == 4, "expected 4 completed futures"
