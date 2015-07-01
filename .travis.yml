@@ -9,7 +9,7 @@ install:
 
 script: 
   - make test
-  - coverage run --source=threadloop setup.py tests
+  - coverage run --source=threadloop setup.py test
 
 after_success:
   - coveralls
