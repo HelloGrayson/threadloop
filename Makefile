@@ -1,10 +1,9 @@
 project := threadloop
 
 flake8 := flake8
-pytest := py.test -s --tb short --cov-config .coveragerc --cov \
-          $(project) tests
+pytest := py.test -s --tb short --cov $(project) tests
 
-test_args := --cov-report term-missing
+test_args := --cov-report term-missing --cov-report xml
 
 .DEFAULT_GOAL := test
 
@@ -23,4 +22,4 @@ test: clean lint
 
 .PHONY: lint
 lint:
-	$(flake8) $(project) tests 
+	$(flake8) $(project) tests

@@ -6,13 +6,12 @@ python:
   - "3.3"
   - "3.4"
 
-install: 
+install:
   - make install
-  - pip install coveralls
 
-script: 
+script:
   - make test
-  - coverage run --source=threadloop setup.py test
+  - make lint
 
 after_success:
   - coveralls
