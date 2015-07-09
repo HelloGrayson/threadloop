@@ -6,7 +6,6 @@ from threading import Thread, current_thread
 from tornado import ioloop
 
 from .exceptions import ThreadNotStartedError
-from .glossary import CHILD_THREAD_SELF_DESTRUCT_CHECK_INTERVAL
 
 
 class ThreadLoop(object):
@@ -29,14 +28,8 @@ class ThreadLoop(object):
     def start(self):
         assert self.thread is None, 'thread already started'
         self.thread = Thread(target=self.io_loop.start)
+        self.thread.daemon = True
         self.thread.start()
-
-        # check on an interval if the main thread is dead
-        # and kill the child thread if so
-        ioloop.PeriodicCallback(
-            self._destruct_child_thread,
-            CHILD_THREAD_SELF_DESTRUCT_CHECK_INTERVAL
-        ).start()
 
     def stop(self):
         self.io_loop.stop()
@@ -60,7 +53,3 @@ class ThreadLoop(object):
         )
 
         return future
-
-    def _destruct_child_thread(self):
-        if not self.main_thread.isAlive():
-            self.io_loop.stop()
