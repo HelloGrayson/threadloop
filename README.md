@@ -10,11 +10,11 @@ from threadloop import ThreadLoop
 from tornado import gen
 
 @gen.coroutine
-def hello(greeting="Goodbye"):
+def coroutine(greeting="Goodbye"):
     raise gen.Result("%s World" % greeting)
 
 with ThreadLoop() as threadloop:
-    future = threadloop.submit(hello, "Hello")
+    future = threadloop.submit(coroutine, "Hello")
 
     print future.result() # Hello World
 ```
