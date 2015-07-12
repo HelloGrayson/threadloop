@@ -60,10 +60,10 @@ class ThreadLoop(object):
         self.io_loop.stop()
         self.thread.join()
 
-    def submit(self, coroutine, *args, **kwargs):
+    def submit(self, fn, *args, **kwargs):
         """Submit Tornado Coroutine to IOLoop in daemonized thread.
 
-        :param coroutine: Tornado Coroutine to execute
+        :param fn: Tornado Coroutine to execute
         :param args: Args to pass to coroutine
         :param kwargs: Kwargs to pass to coroutine
         :returns concurrent.futures.Future: future result of coroutine
@@ -80,7 +80,7 @@ class ThreadLoop(object):
                 future.set_result(tornado_future.result())
 
         self.io_loop.add_callback(
-            lambda: coroutine(*args, **kwargs).add_done_callback(on_done)
+            lambda: fn(*args, **kwargs).add_done_callback(on_done)
         )
 
         return future
