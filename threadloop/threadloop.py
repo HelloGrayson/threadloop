@@ -19,6 +19,7 @@ class ThreadLoop(object):
 
     .. code-block:: python
 
+        from threadloop import ThreadLoop
         from tornado import gen
 
         @gen.coroutine
