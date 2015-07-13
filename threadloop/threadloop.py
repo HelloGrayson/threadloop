@@ -38,7 +38,7 @@ class ThreadLoop(object):
 
         self.thread = None
         if io_loop is None:
-            self.io_loop = ioloop.IOLoop.current()
+            self.io_loop = ioloop.IOLoop()
         else:
             self.io_loop = io_loop
 
