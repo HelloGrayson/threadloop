@@ -1,6 +1,9 @@
 from __future__ import absolute_import
 from decimal import Decimal
 import time
+from types import TracebackType
+import traceback
+import sys
 
 import pytest
 
@@ -57,6 +60,31 @@ def test_coroutine_exception_propagates(threadloop):
     with pytest.raises(TestException):
         future = threadloop.submit(coroutine)
         future.result()
+
+
+def test_coroutine_exception_contains_exc_info(threadloop):
+
+    class TestException(Exception):
+        pass
+
+    @gen.coroutine
+    def coroutine():
+        raise TestException('something went wrong')
+
+    try:
+        threadloop.submit(coroutine).result()
+    except Exception:
+        e, tb = sys.exc_info()[1:]
+
+        assert isinstance(e, TestException)
+        assert isinstance(tb, TracebackType)
+
+        tb_out = traceback.extract_tb(tb)
+        assert "raise TestException('something went wrong')" in str(tb_out)
+
+        return
+
+    assert False, "should have thrown exception"
 
 
 def test_use_existing_ioloop():

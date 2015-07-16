@@ -7,6 +7,10 @@ from tornado import ioloop
 
 from .exceptions import ThreadNotStartedError
 
+# Python3's concurrent.futures.Future doesn't allow
+# setting exc_info... but exc_info works w/o setting explicitly
+_FUTURE_HAS_EXC_INFO = hasattr(Future, "set_exception_info")
+
 
 class ThreadLoop(object):
     """Tornado IOLoop Backed Concurrent Futures.
@@ -75,10 +79,20 @@ class ThreadLoop(object):
         future = Future()
 
         def on_done(tornado_future):
-            if tornado_future.exception():
-                future.set_exception(tornado_future.exception())
-            else:
+
+            if not tornado_future.exception():
                 future.set_result(tornado_future.result())
+                return
+
+            exception, traceback = tornado_future.exc_info()[1:]
+
+            # python2 needs exc_info set explicitly
+            if _FUTURE_HAS_EXC_INFO:
+                future.set_exception_info(exception, traceback)
+                return
+
+            # python3 just needs the exception, exc_info works fine
+            future.set_exception(exception)
 
         self.io_loop.add_callback(
             lambda: fn(*args, **kwargs).add_done_callback(on_done)
