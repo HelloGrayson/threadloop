@@ -4,7 +4,7 @@ import time
 
 import pytest
 
-from concurrent.futures import Future, as_completed
+from concurrent.futures import Future, as_completed, TimeoutError
 from threadloop import ThreadLoop
 from threadloop.exceptions import ThreadNotStartedError
 from tornado import gen, ioloop
@@ -169,3 +169,21 @@ def test_as_completed(threadloop):
             assert future.result() == "coroutine4"
 
     assert i == 4, "expected 4 completed futures"
+
+
+def test_timeout(threadloop):
+
+    @gen.coroutine
+    def too_long():
+        yield gen.sleep(5)  # 5 sec task
+        raise gen.Return('that was too long')
+
+    start = time.time()
+    future = threadloop.submit(too_long)
+
+    with pytest.raises(TimeoutError):
+        future.result(timeout=.001)
+
+    amount = time.time() - start
+
+    assert amount <= .002
