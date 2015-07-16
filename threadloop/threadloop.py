@@ -28,7 +28,8 @@ class ThreadLoop(object):
 
         @gen.coroutine
         def coroutine(greeting="Goodbye"):
-            raise gen.Result("%s World" % greeting)
+            yield gen.sleep(1)
+            raise gen.Return("%s World" % greeting)
 
         with ThreadLoop() as threadloop:
 
