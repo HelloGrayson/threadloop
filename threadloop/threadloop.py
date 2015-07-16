@@ -76,7 +76,8 @@ class ThreadLoop(object):
 
         def on_done(tornado_future):
             if tornado_future.exception():
-                future.set_exception(tornado_future.exception())
+                exception, traceback = tornado_future.exc_info()[1:]
+                future.set_exception_info(exception, traceback)
             else:
                 future.set_result(tornado_future.result())
 
