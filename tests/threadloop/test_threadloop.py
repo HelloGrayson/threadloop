@@ -184,6 +184,7 @@ def test_timeout(threadloop):
     with pytest.raises(TimeoutError):
         future.result(timeout=.001)
 
-    amount = time.time() - start
+    end = time.time() - start
+    took = float(round(Decimal(str(end)), 1))
 
-    assert amount <= .002
+    assert took <= .002
