@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.3.2 (unreleased)
+0.3.2 (2015-07-16)
 ------------------
 
 - Fix exception traceback not propagating in python2.
