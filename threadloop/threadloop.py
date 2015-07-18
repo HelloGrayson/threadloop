@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from concurrent.futures import Future
-from threading import Thread, current_thread
+from threading import Thread, current_thread, Event
 
 from tornado import ioloop
 
@@ -42,7 +42,10 @@ class ThreadLoop(object):
         self.main_thread = current_thread()
 
         self.thread = None
-        self._is_running = False
+
+        # a ready event, is_set() default is False
+        # until set is called
+        self._ready = Event()
 
         if io_loop is None:
             self.io_loop = ioloop.IOLoop()
@@ -64,15 +67,14 @@ class ThreadLoop(object):
         self.thread = Thread(target=self._start_io_loop)
         self.thread.daemon = True
 
-        # block until thread is ready
+        # begin thread and block until ready
         self.thread.start()
-        while not self._is_running:
-            pass
+        self._ready.wait()
 
     def _start_io_loop(self):
 
         def mark_as_running():
-            self._is_running = True
+            self._ready.set()
 
         self.io_loop.add_callback(mark_as_running)
         self.io_loop.start()
@@ -90,7 +92,7 @@ class ThreadLoop(object):
         :param kwargs: Kwargs to pass to coroutine
         :returns concurrent.futures.Future: future result of coroutine
         """
-        if not self._is_running:
+        if not self._ready.is_set():
             raise ThreadNotStartedError()
 
         future = Future()
