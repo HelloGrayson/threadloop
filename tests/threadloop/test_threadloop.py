@@ -216,3 +216,14 @@ def test_timeout(threadloop):
     took = float(round(Decimal(str(end)), 1))
 
     assert took <= .002
+
+
+def test_block_until_thread_is_ready():
+
+    threadloop = ThreadLoop()
+
+    assert not threadloop.is_running
+
+    threadloop.start()
+
+    assert threadloop.is_running

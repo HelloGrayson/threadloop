@@ -42,6 +42,8 @@ class ThreadLoop(object):
         self.main_thread = current_thread()
 
         self.thread = None
+        self.is_running = False
+
         if io_loop is None:
             self.io_loop = ioloop.IOLoop()
         else:
@@ -57,9 +59,23 @@ class ThreadLoop(object):
     def start(self):
         """Start IOLoop in daemonized thread."""
         assert self.thread is None, 'thread already started'
-        self.thread = Thread(target=self.io_loop.start)
+
+        # configure thread
+        self.thread = Thread(target=self._start_thread)
         self.thread.daemon = True
+
+        # block until thread is ready
         self.thread.start()
+        while not self.is_running:
+            pass
+
+    def _start_thread(self):
+
+        def update_state():
+            self.is_running = True
+
+        self.io_loop.add_callback(update_state)
+        self.io_loop.start()
 
     def stop(self):
         """Stop IOLoop & close daemonized thread."""
@@ -74,7 +90,7 @@ class ThreadLoop(object):
         :param kwargs: Kwargs to pass to coroutine
         :returns concurrent.futures.Future: future result of coroutine
         """
-        if self.thread is None or not self.thread.isAlive():
+        if not self.is_running:
             raise ThreadNotStartedError()
 
         future = Future()
