@@ -76,6 +76,17 @@ class ThreadLoop(object):
         self.io_loop.add_callback(mark_as_running)
         self.io_loop.start()
 
+    def is_ready(self):
+        """Is thread & ioloop ready."""
+
+        if not self.thread:
+            return False
+
+        if not self._ready.is_set():
+            return False
+
+        return True
+
     def stop(self):
         """Stop IOLoop & close daemonized thread."""
         self.io_loop.stop()
@@ -89,8 +100,11 @@ class ThreadLoop(object):
         :param kwargs: Kwargs to pass to coroutine
         :returns concurrent.futures.Future: future result of coroutine
         """
-        if not self._ready.is_set():
-            raise ThreadNotStartedError()
+        if not self.is_ready():
+            raise ThreadNotStartedError(
+                "The thread has not been started yet, make sure start has "
+                "been called first like so: ThreadLoop().start()"
+            )
 
         future = Future()
 

@@ -222,8 +222,8 @@ def test_block_until_thread_is_ready():
 
     threadloop = ThreadLoop()
 
-    assert not threadloop._ready.is_set()
+    assert not threadloop.is_ready()
 
     threadloop.start()
 
-    assert threadloop._ready.is_set()
+    assert threadloop.is_ready()
