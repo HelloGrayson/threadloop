@@ -42,7 +42,7 @@ class ThreadLoop(object):
         self.main_thread = current_thread()
 
         self.thread = None
-        self.is_running = False
+        self._is_running = False
 
         if io_loop is None:
             self.io_loop = ioloop.IOLoop()
@@ -66,13 +66,13 @@ class ThreadLoop(object):
 
         # block until thread is ready
         self.thread.start()
-        while not self.is_running:
+        while not self._is_running:
             pass
 
     def _start_thread(self):
 
         def update_state():
-            self.is_running = True
+            self._is_running = True
 
         self.io_loop.add_callback(update_state)
         self.io_loop.start()
@@ -90,7 +90,7 @@ class ThreadLoop(object):
         :param kwargs: Kwargs to pass to coroutine
         :returns concurrent.futures.Future: future result of coroutine
         """
-        if not self.is_running:
+        if not self._is_running:
             raise ThreadNotStartedError()
 
         future = Future()
