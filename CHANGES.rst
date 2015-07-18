@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.3.3 (unreleased)
+0.3.3 (2015-07-17)
 ------------------
 
 - Fix race condition where submit can be called before Thread is fully started.
