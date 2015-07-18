@@ -44,9 +44,9 @@ class ThreadLoop(object):
         self._ready = Event()
 
         if io_loop is None:
-            self.io_loop = ioloop.IOLoop()
+            self._io_loop = ioloop.IOLoop()
         else:
-            self.io_loop = io_loop
+            self._io_loop = io_loop
 
     def __enter__(self):
         self.start()
@@ -72,8 +72,8 @@ class ThreadLoop(object):
         def mark_as_ready():
             self._ready.set()
 
-        self.io_loop.add_callback(mark_as_ready)
-        self.io_loop.start()
+        self._io_loop.add_callback(mark_as_ready)
+        self._io_loop.start()
 
     def is_ready(self):
         """Is thread & ioloop ready."""
@@ -88,7 +88,7 @@ class ThreadLoop(object):
 
     def stop(self):
         """Stop IOLoop & close daemonized thread."""
-        self.io_loop.stop()
+        self._io_loop.stop()
         self._thread.join()
 
     def submit(self, fn, *args, **kwargs):
@@ -123,7 +123,7 @@ class ThreadLoop(object):
             # python3 just needs the exception, exc_info works fine
             future.set_exception(exception)
 
-        self.io_loop.add_callback(
+        self._io_loop.add_callback(
             lambda: fn(*args, **kwargs).add_done_callback(on_done)
         )
 

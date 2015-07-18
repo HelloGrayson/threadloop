@@ -91,7 +91,7 @@ def test_use_existing_ioloop():
     io_loop = ioloop.IOLoop.current()
     threadloop = ThreadLoop(io_loop)
 
-    assert threadloop.io_loop is io_loop
+    assert threadloop._io_loop is io_loop
 
     @gen.coroutine
     def coroutine():
