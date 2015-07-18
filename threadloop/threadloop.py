@@ -70,10 +70,10 @@ class ThreadLoop(object):
 
     def _start_io_loop(self):
 
-        def mark_as_running():
+        def mark_as_ready():
             self._ready.set()
 
-        self.io_loop.add_callback(mark_as_running)
+        self.io_loop.add_callback(mark_as_ready)
         self.io_loop.start()
 
     def is_ready(self):
