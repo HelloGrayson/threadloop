@@ -71,10 +71,10 @@ class ThreadLoop(object):
 
     def _start_thread(self):
 
-        def update_state():
+        def mark_as_running():
             self._is_running = True
 
-        self.io_loop.add_callback(update_state)
+        self.io_loop.add_callback(mark_as_running)
         self.io_loop.start()
 
     def stop(self):
