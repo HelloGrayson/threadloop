@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from concurrent.futures import Future
-from threading import Thread, current_thread, Event
+from threading import Event, Thread
 
 from tornado import ioloop
 
@@ -39,7 +39,6 @@ class ThreadLoop(object):
 
     """
     def __init__(self, io_loop=None):
-        self.main_thread = current_thread()
 
         self.thread = None
         self._ready = Event()
