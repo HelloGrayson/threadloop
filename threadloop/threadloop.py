@@ -42,9 +42,6 @@ class ThreadLoop(object):
         self.main_thread = current_thread()
 
         self.thread = None
-
-        # a ready event, is_set() default is False
-        # until set is called
         self._ready = Event()
 
         if io_loop is None:
