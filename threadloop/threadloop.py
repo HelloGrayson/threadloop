@@ -40,7 +40,7 @@ class ThreadLoop(object):
     """
     def __init__(self, io_loop=None):
 
-        self.thread = None
+        self._thread = None
         self._ready = Event()
 
         if io_loop is None:
@@ -57,14 +57,14 @@ class ThreadLoop(object):
 
     def start(self):
         """Start IOLoop in daemonized thread."""
-        assert self.thread is None, 'thread already started'
+        assert self._thread is None, 'thread already started'
 
         # configure thread
-        self.thread = Thread(target=self._start_io_loop)
-        self.thread.daemon = True
+        self._thread = Thread(target=self._start_io_loop)
+        self._thread.daemon = True
 
         # begin thread and block until ready
-        self.thread.start()
+        self._thread.start()
         self._ready.wait()
 
     def _start_io_loop(self):
@@ -78,7 +78,7 @@ class ThreadLoop(object):
     def is_ready(self):
         """Is thread & ioloop ready."""
 
-        if not self.thread:
+        if not self._thread:
             return False
 
         if not self._ready.is_set():
@@ -89,7 +89,7 @@ class ThreadLoop(object):
     def stop(self):
         """Stop IOLoop & close daemonized thread."""
         self.io_loop.stop()
-        self.thread.join()
+        self._thread.join()
 
     def submit(self, fn, *args, **kwargs):
         """Submit Tornado Coroutine to IOLoop in daemonized thread.
