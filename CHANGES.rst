@@ -1,10 +1,11 @@
 Changelog
 =========
 
-0.3.4 (unreleased)
+0.4.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Added ``Thread.is_ready()``.
+- Switched blocking mechanism to use a ``threading.Event``.
 
 
 0.3.3 (2015-07-17)

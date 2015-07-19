@@ -91,7 +91,7 @@ def test_use_existing_ioloop():
     io_loop = ioloop.IOLoop.current()
     threadloop = ThreadLoop(io_loop)
 
-    assert threadloop.io_loop is io_loop
+    assert threadloop._io_loop is io_loop
 
     @gen.coroutine
     def coroutine():
@@ -222,8 +222,16 @@ def test_block_until_thread_is_ready():
 
     threadloop = ThreadLoop()
 
-    assert not threadloop._is_running
+    assert not threadloop.is_ready()
 
     threadloop.start()
 
-    assert threadloop._is_running
+    assert threadloop.is_ready()
+
+
+def test_is_not_ready_when_ready_hasnt_been_sent():
+
+    threadloop = ThreadLoop()
+    threadloop._thread = True  # fake the Thread being set
+
+    assert not threadloop.is_ready()

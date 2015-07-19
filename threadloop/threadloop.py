@@ -1,7 +1,7 @@
 from __future__ import absolute_import
 
 from concurrent.futures import Future
-from threading import Thread, current_thread
+from threading import Event, Thread
 
 from tornado import ioloop
 
@@ -39,15 +39,14 @@ class ThreadLoop(object):
 
     """
     def __init__(self, io_loop=None):
-        self.main_thread = current_thread()
 
-        self.thread = None
-        self._is_running = False
+        self._thread = None
+        self._ready = Event()
 
         if io_loop is None:
-            self.io_loop = ioloop.IOLoop()
+            self._io_loop = ioloop.IOLoop()
         else:
-            self.io_loop = io_loop
+            self._io_loop = io_loop
 
     def __enter__(self):
         self.start()
@@ -58,29 +57,39 @@ class ThreadLoop(object):
 
     def start(self):
         """Start IOLoop in daemonized thread."""
-        assert self.thread is None, 'thread already started'
+        assert self._thread is None, 'thread already started'
 
         # configure thread
-        self.thread = Thread(target=self._start_io_loop)
-        self.thread.daemon = True
+        self._thread = Thread(target=self._start_io_loop)
+        self._thread.daemon = True
 
-        # block until thread is ready
-        self.thread.start()
-        while not self._is_running:
-            pass
+        # begin thread and block until ready
+        self._thread.start()
+        self._ready.wait()
 
     def _start_io_loop(self):
 
-        def mark_as_running():
-            self._is_running = True
+        def mark_as_ready():
+            self._ready.set()
 
-        self.io_loop.add_callback(mark_as_running)
-        self.io_loop.start()
+        self._io_loop.add_callback(mark_as_ready)
+        self._io_loop.start()
+
+    def is_ready(self):
+        """Is thread & ioloop ready."""
+
+        if not self._thread:
+            return False
+
+        if not self._ready.is_set():
+            return False
+
+        return True
 
     def stop(self):
         """Stop IOLoop & close daemonized thread."""
-        self.io_loop.stop()
-        self.thread.join()
+        self._io_loop.stop()
+        self._thread.join()
 
     def submit(self, fn, *args, **kwargs):
         """Submit Tornado Coroutine to IOLoop in daemonized thread.
@@ -90,8 +99,11 @@ class ThreadLoop(object):
         :param kwargs: Kwargs to pass to coroutine
         :returns concurrent.futures.Future: future result of coroutine
         """
-        if not self._is_running:
-            raise ThreadNotStartedError()
+        if not self.is_ready():
+            raise ThreadNotStartedError(
+                "The thread has not been started yet, "
+                "make sure you call start() first"
+            )
 
         future = Future()
 
@@ -111,7 +123,7 @@ class ThreadLoop(object):
             # python3 just needs the exception, exc_info works fine
             future.set_exception(exception)
 
-        self.io_loop.add_callback(
+        self._io_loop.add_callback(
             lambda: fn(*args, **kwargs).add_done_callback(on_done)
         )
 
