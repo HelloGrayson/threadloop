@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.4.0 (unreleased)
+0.4.0 (2015-07-19)
 ------------------
 
 - Added ``Thread.is_ready()``.
