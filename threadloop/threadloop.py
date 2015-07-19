@@ -101,8 +101,8 @@ class ThreadLoop(object):
         """
         if not self.is_ready():
             raise ThreadNotStartedError(
-                "The thread has not been started yet, make sure start has "
-                "been called first like so: ThreadLoop().start()"
+                "The thread has not been started yet, "
+                "make sure you call start() first"
             )
 
         future = Future()
