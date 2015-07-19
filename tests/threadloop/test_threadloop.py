@@ -227,3 +227,11 @@ def test_block_until_thread_is_ready():
     threadloop.start()
 
     assert threadloop.is_ready()
+
+
+def test_is_not_ready_when_ready_hasnt_been_sent():
+
+    threadloop = ThreadLoop()
+    threadloop._thread = True  # fake the Thread being set
+
+    assert not threadloop.is_ready()
