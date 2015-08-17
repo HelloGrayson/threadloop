@@ -19,6 +19,10 @@ def threadloop():
         yield threadloop
 
 
+class TestException(Exception):
+    pass
+
+
 def test_coroutine_returns_future(threadloop):
 
     @gen.coroutine
@@ -50,9 +54,6 @@ def test_propogates_arguments(threadloop):
 
 def test_coroutine_exception_propagates(threadloop):
 
-    class TestException(Exception):
-        pass
-
     @gen.coroutine
     def coroutine():
         raise TestException()
@@ -64,15 +65,60 @@ def test_coroutine_exception_propagates(threadloop):
 
 def test_coroutine_exception_contains_exc_info(threadloop):
 
-    class TestException(Exception):
-        pass
-
     @gen.coroutine
     def coroutine():
         raise TestException('something went wrong')
 
     try:
         threadloop.submit(coroutine).result()
+    except Exception:
+        e, tb = sys.exc_info()[1:]
+
+        assert isinstance(e, TestException)
+        assert isinstance(tb, TracebackType)
+
+        tb_out = traceback.extract_tb(tb)
+        assert "raise TestException('something went wrong')" in str(tb_out)
+
+        return
+
+    assert False, "should have thrown exception"
+
+
+def test_plain_function(threadloop):
+
+    def not_a_coroutine():
+        return "Hello World"
+
+    future = threadloop.submit(not_a_coroutine)
+
+    assert (
+        isinstance(future, Future),
+        "expected a concurrent.futures.Future"
+    )
+
+    assert future.result() == "Hello World"
+
+
+def test_plain_function_exception_propagates(threadloop):
+
+    def not_a_coroutine():
+        raise TestException()
+
+    future = threadloop.submit(not_a_coroutine)
+
+    with pytest.raises(TestException):
+        future = threadloop.submit(not_a_coroutine)
+        future.result()
+
+
+def test_plain_function_exception_contains_exc_info(threadloop):
+
+    def not_a_coroutine():
+        raise TestException('something went wrong')
+
+    try:
+        threadloop.submit(not_a_coroutine).result()
     except Exception:
         e, tb = sys.exc_info()[1:]
 

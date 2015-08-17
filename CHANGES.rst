@@ -4,7 +4,8 @@ Changelog
 0.4.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Synchronous functions (i.e., those not returning futures) can be submitted to
+  the loop.
 
 
 0.4.0 (2015-07-19)

@@ -1,9 +1,11 @@
 from __future__ import absolute_import
 
+import sys
 from concurrent.futures import Future
 from threading import Event, Thread
 
 from tornado import ioloop
+from tornado import gen
 
 from .exceptions import ThreadNotStartedError
 
@@ -123,8 +125,19 @@ class ThreadLoop(object):
             # python3 just needs the exception, exc_info works fine
             future.set_exception(exception)
 
-        self._io_loop.add_callback(
-            lambda: fn(*args, **kwargs).add_done_callback(on_done)
-        )
+        def do_it():
+            try:
+                result = gen.maybe_future(fn(*args, **kwargs))
+            except Exception:
+                # The function we ran didn't return a future and instead raised
+                # an exception. Let's pretend that it returned this dummy
+                # future with our stack trace.
+                f = gen.Future()
+                f.set_exc_info(sys.exc_info())
+                on_done(f)
+            else:
+                result.add_done_callback(on_done)
+
+        self._io_loop.add_callback(do_it)
 
         return future
