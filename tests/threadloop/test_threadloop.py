@@ -87,6 +87,21 @@ def test_coroutine_exception_contains_exc_info(threadloop):
     assert False, "should have thrown exception"
 
 
+def test_plain_function(threadloop):
+
+    def not_a_coroutine():
+        return "Hello World"
+
+    future = threadloop.submit(not_a_coroutine)
+
+    assert (
+        isinstance(future, Future),
+        "expected a concurrent.futures.Future"
+    )
+
+    assert future.result() == "Hello World"
+
+
 def test_use_existing_ioloop():
     io_loop = ioloop.IOLoop.current()
     threadloop = ThreadLoop(io_loop)

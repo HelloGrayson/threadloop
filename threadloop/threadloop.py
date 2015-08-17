@@ -4,6 +4,7 @@ from concurrent.futures import Future
 from threading import Event, Thread
 
 from tornado import ioloop
+from tornado import gen
 
 from .exceptions import ThreadNotStartedError
 
@@ -124,7 +125,9 @@ class ThreadLoop(object):
             future.set_exception(exception)
 
         self._io_loop.add_callback(
-            lambda: fn(*args, **kwargs).add_done_callback(on_done)
+            lambda: gen.maybe_future(
+                fn(*args, **kwargs)
+            ).add_done_callback(on_done)
         )
 
         return future
