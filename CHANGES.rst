@@ -1,7 +1,7 @@
 Changelog
 =========
 
-0.4.1 (unreleased)
+0.5.0 (2015-08-17)
 ------------------
 
 - Synchronous functions (i.e., those not returning futures) can be submitted to
