@@ -1,10 +1,13 @@
 Changelog
 =========
 
-0.5.1 (unreleased)
+1.0.0 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Commit to current API.
+- Better documentation.
+- Dropped support for Python 2.6.
+- Dropped support for Python 3.2.
 
 
 0.5.0 (2015-08-17)
