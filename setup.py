@@ -10,7 +10,7 @@ except ImportError:
 
 setup(
     name='threadloop',
-    version='0.5.1.dev0',
+    version='1.0.0',
     author='Grayson Koonce',
     author_email='breerly@gmail.com',
     description='Tornado IOLoop Backed Concurrent Futures',
@@ -21,10 +21,8 @@ setup(
     classifiers=[
         'License :: OSI Approved :: MIT License',
         'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.2',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: Implementation :: CPython',

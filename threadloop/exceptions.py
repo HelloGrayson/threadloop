@@ -1,11 +1,11 @@
 from __future__ import absolute_import
 
 
-# All exceptions & errors inherit from this base exception.
 class ThreadLoopException(Exception):
+    """Top-level library exception."""
     pass
 
 
-# Attempted to submit coroutine before ThreadLoop.start() was called.
 class ThreadNotStartedError(ThreadLoopException):
+    """Raised when calling submit before ThreadLoop.start() was called."""
     pass

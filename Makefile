@@ -14,7 +14,7 @@ install:
 
 .PHONY: clean
 clean:
-	@find $(project) -name "*.pyc" -delete
+	@find $(project) tests -name "*.pyc" -delete
 
 .PHONY:test
 test: clean lint

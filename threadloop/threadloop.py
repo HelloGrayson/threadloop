@@ -70,6 +70,7 @@ class ThreadLoop(object):
         self._ready.wait()
 
     def _start_io_loop(self):
+        """Start IOLoop then set ready threading.Event."""
 
         def mark_as_ready():
             self._ready.set()
@@ -78,8 +79,10 @@ class ThreadLoop(object):
         self._io_loop.start()
 
     def is_ready(self):
-        """Is thread & ioloop ready."""
+        """Is thread & ioloop ready.
 
+        :returns bool:
+        """
         if not self._thread:
             return False
 
@@ -109,7 +112,22 @@ class ThreadLoop(object):
 
         future = Future()
 
+        def execute():
+            """Executes fn on the IOLoop."""
+            try:
+                result = gen.maybe_future(fn(*args, **kwargs))
+            except Exception:
+                # The function we ran didn't return a future and instead raised
+                # an exception. Let's pretend that it returned this dummy
+                # future with our stack trace.
+                f = gen.Future()
+                f.set_exc_info(sys.exc_info())
+                on_done(f)
+            else:
+                result.add_done_callback(on_done)
+
         def on_done(tornado_future):
+            """Sets tornado.Future results to the concurrent.Future."""
 
             if not tornado_future.exception():
                 future.set_result(tornado_future.result())
@@ -125,19 +143,6 @@ class ThreadLoop(object):
             # python3 just needs the exception, exc_info works fine
             future.set_exception(exception)
 
-        def do_it():
-            try:
-                result = gen.maybe_future(fn(*args, **kwargs))
-            except Exception:
-                # The function we ran didn't return a future and instead raised
-                # an exception. Let's pretend that it returned this dummy
-                # future with our stack trace.
-                f = gen.Future()
-                f.set_exc_info(sys.exc_info())
-                on_done(f)
-            else:
-                result.add_done_callback(on_done)
-
-        self._io_loop.add_callback(do_it)
+        self._io_loop.add_callback(execute)
 
         return future
