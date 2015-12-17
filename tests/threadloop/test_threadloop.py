@@ -1,16 +1,15 @@
 from __future__ import absolute_import
-from decimal import Decimal
+
 import time
 from types import TracebackType
-import traceback
-import sys
+from decimal import Decimal
 
 import pytest
-
+from tornado import gen, ioloop
 from concurrent.futures import Future, as_completed, TimeoutError
+
 from threadloop import ThreadLoop
 from threadloop.exceptions import ThreadNotStartedError
-from tornado import gen, ioloop
 
 
 @pytest.fixture(autouse=True)
@@ -75,20 +74,16 @@ def test_coroutine_exception_contains_exc_info(threadloop):
     def coroutine():
         raise TestException('something went wrong')
 
-    try:
+    with pytest.raises(Exception) as exc_info:
         threadloop.submit(coroutine).result()
-    except Exception:
-        e, tb = sys.exc_info()[1:]
 
-        assert isinstance(e, TestException)
-        assert isinstance(tb, TracebackType)
-
-        tb_out = traceback.extract_tb(tb)
-        assert "raise TestException('something went wrong')" in str(tb_out)
-
-        return
-
-    assert False, "should have thrown exception"
+    assert 'something went wrong' in str(exc_info.value)
+    assert isinstance(exc_info.value, TestException)
+    assert isinstance(exc_info.tb, TracebackType)
+    assert (
+        "raise TestException('something went wrong')"
+        in str(exc_info.traceback[-1])
+    )
 
 
 def test_plain_function(threadloop):
@@ -123,20 +118,16 @@ def test_plain_function_exception_contains_exc_info(threadloop):
     def not_a_coroutine():
         raise TestException('something went wrong')
 
-    try:
+    with pytest.raises(Exception) as exc_info:
         threadloop.submit(not_a_coroutine).result()
-    except Exception:
-        e, tb = sys.exc_info()[1:]
 
-        assert isinstance(e, TestException)
-        assert isinstance(tb, TracebackType)
-
-        tb_out = traceback.extract_tb(tb)
-        assert "raise TestException('something went wrong')" in str(tb_out)
-
-        return
-
-    assert False, "should have thrown exception"
+    assert 'something went wrong' in str(exc_info.value)
+    assert isinstance(exc_info.value, TestException)
+    assert isinstance(exc_info.tb, TracebackType)
+    assert (
+        "raise TestException('something went wrong')"
+        in str(exc_info.traceback[-1])
+    )
 
 
 def test_use_existing_ioloop():
