@@ -10,7 +10,7 @@ except ImportError:
 
 setup(
     name='threadloop',
-    version='1.0.1',
+    version='1.0.2.dev0',
     author='Grayson Koonce',
     author_email='breerly@gmail.com',
     description='Tornado IOLoop Backed Concurrent Futures',
