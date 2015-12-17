@@ -44,11 +44,7 @@ class ThreadLoop(object):
 
         self._thread = None
         self._ready = Event()
-
-        if io_loop is None:
-            self._io_loop = ioloop.IOLoop()
-        else:
-            self._io_loop = io_loop
+        self._io_loop = io_loop
 
     def __enter__(self):
         self.start()
@@ -74,6 +70,9 @@ class ThreadLoop(object):
 
         def mark_as_ready():
             self._ready.set()
+
+        if not self._io_loop:
+            self._io_loop = ioloop.IOLoop()
 
         self._io_loop.add_callback(mark_as_ready)
         self._io_loop.start()

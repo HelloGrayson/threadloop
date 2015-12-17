@@ -13,6 +13,12 @@ from threadloop.exceptions import ThreadNotStartedError
 from tornado import gen, ioloop
 
 
+@pytest.fixture(autouse=True)
+def clear_io_loop():
+    # clear the current IOLoop before all tests
+    ioloop.IOLoop.clear_current()
+
+
 @pytest.yield_fixture
 def threadloop():
     with ThreadLoop() as threadloop:
@@ -281,3 +287,24 @@ def test_is_not_ready_when_ready_hasnt_been_sent():
     threadloop._thread = True  # fake the Thread being set
 
     assert not threadloop.is_ready()
+
+
+def test_main_io_loop_is_not_changed():
+    threadloop = ThreadLoop()
+    threadloop.start()
+
+    # The ThreadLoop's IOLoop should not be the 'current' IOLoop in the main
+    # thread.
+    tl_loop = threadloop.submit(ioloop.IOLoop.current).result()
+    assert ioloop.IOLoop.current() is not tl_loop
+
+
+def test_ioloop_is_not_already_running():
+    threadloop = ThreadLoop()
+    threadloop.start()
+
+    @gen.coroutine
+    def f():
+        yield threadloop.submit(gen.sleep, 0.1)
+
+    ioloop.IOLoop.current().run_sync(f)

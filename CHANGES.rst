@@ -4,7 +4,8 @@ Changelog
 1.0.1 (unreleased)
 ------------------
 
-- Nothing changed yet.
+- Fixed a bug where instantiating ``ThreadLoop`` would change the ``IOLoop``
+  for the current thread.
 
 
 1.0.0 (2015-10-05)
