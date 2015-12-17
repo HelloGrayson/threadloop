@@ -1,7 +1,7 @@
 Changelog
 =========
 
-1.0.1 (unreleased)
+1.0.1 (2015-12-17)
 ------------------
 
 - Fixed a bug where instantiating ``ThreadLoop`` would change the ``IOLoop``
