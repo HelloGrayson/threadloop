@@ -36,10 +36,7 @@ def test_coroutine_returns_future(threadloop):
 
     future = threadloop.submit(coroutine)
 
-    assert (
-        isinstance(future, Future),
-        "expected a concurrent.futures.Future"
-    )
+    assert isinstance(future, Future), "expected a concurrent.futures.Future"
 
     assert future.result() == "Hello World"
 
@@ -93,10 +90,7 @@ def test_plain_function(threadloop):
 
     future = threadloop.submit(not_a_coroutine)
 
-    assert (
-        isinstance(future, Future),
-        "expected a concurrent.futures.Future"
-    )
+    assert isinstance(future, Future), "expected a concurrent.futures.Future"
 
     assert future.result() == "Hello World"
 
