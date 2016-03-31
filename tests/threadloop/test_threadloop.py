@@ -83,6 +83,16 @@ def test_coroutine_exception_contains_exc_info(threadloop):
     )
 
 
+def test_propagate_concurrent_future_exception(threadloop):
+    def func():
+        future = Future()
+        future.set_exception(AttributeError())
+        return future
+
+    with pytest.raises(AttributeError):
+        threadloop.submit(func).result()
+
+
 def test_plain_function(threadloop):
 
     def not_a_coroutine():
