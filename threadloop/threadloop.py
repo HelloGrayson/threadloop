@@ -125,14 +125,27 @@ class ThreadLoop(object):
             else:
                 result.add_done_callback(on_done)
 
-        def on_done(tornado_future):
+        def on_done(f):
             """Sets tornado.Future results to the concurrent.Future."""
 
-            if not tornado_future.exception():
-                future.set_result(tornado_future.result())
+            if not f.exception():
+                future.set_result(f.result())
                 return
 
-            exception, traceback = tornado_future.exc_info()[1:]
+            # if f is a tornado future, then it has exc_info()
+            if hasattr(f, 'exc_info'):
+                exception, traceback = f.exc_info()[1:]
+
+            # else it's a concurrent.future
+            else:
+                # python2's concurrent.future has exception_info()
+                if hasattr(f, 'exception_info'):
+                    exception, traceback = f.exception_info()
+
+                # python3's concurrent.future just has exception()
+                else:
+                    exception = f.exception()
+                    traceback = None
 
             # python2 needs exc_info set explicitly
             if _FUTURE_HAS_EXC_INFO:
