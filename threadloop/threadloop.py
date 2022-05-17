@@ -58,7 +58,7 @@ class ThreadLoop(object):
         assert self._thread is None, 'thread already started'
 
         # configure thread
-        self._thread = Thread(target=self._start_io_loop)
+        self._thread = Thread(name="threadloop", target=self._start_io_loop)
         self._thread.daemon = True
 
         # begin thread and block until ready
